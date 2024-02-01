@@ -15,8 +15,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: armv7-unknown-linux-musleabihf
+        override: true
+        profile: minimal
+
     - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: true
+        command: build
+        args: --release --target armv7-unknown-linux-musleabihf
+
+    - name: Check binary
+      run: ldd target/armv7-unknown-linux-musleabihf/hello
