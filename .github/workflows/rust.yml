@@ -2,10 +2,12 @@ name: Rust
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
 
+permissions:
+  contents: write
+  
 env:
   CARGO_TERM_COLOR: always
 
@@ -28,4 +30,17 @@ jobs:
     - name: Check binary
       run: |
         ls -l ./target/armv7-unknown-linux-musleabihf/release/hello
-        ldd ./target/armv7-unknown-linux-musleabihf/release/hello
+
+    - name: Build archive
+      shell: bash
+      run: |
+        dirname="hello-${GITHUB_REF#refs/tags/}-armv7-unknown-linux-musleabihf"
+        mkdir "$dirname"
+        mv "target/armv7-unknown-linux-musleabihf/release/hello" "$dirname"
+        tar -czf "$dirname.tar.gz" "$dirname"
+        echo "ASSET=$dirname.tar.gz" >> $GITHUB_ENV
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ${{ env.ASSET }}
