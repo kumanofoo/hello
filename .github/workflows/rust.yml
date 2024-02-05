@@ -27,5 +27,5 @@ jobs:
 
     - name: Check binary
       run: |
-        ls -lR
-        ldd target/armv7-unknown-linux-musleabihf/release/hello
+        ls -l ./target/armv7-unknown-linux-musleabihf/release/hello
+        ldd ./target/armv7-unknown-linux-musleabihf/release/hello
