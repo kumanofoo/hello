@@ -26,4 +26,4 @@ jobs:
         cross build --release --target armv7-unknown-linux-musleabihf
 
     - name: Check binary
-      run: ldd target/armv7-unknown-linux-musleabihf/hello
+      run: ls -lR
