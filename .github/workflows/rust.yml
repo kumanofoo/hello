@@ -48,6 +48,8 @@ jobs:
         mv "target/${{ matrix.target }}/release/hello" "$dirname"
         tar -czf "$dirname.tar.gz" "$dirname"
         echo "ASSET=$dirname.tar.gz" >> $GITHUB_ENV
+        pwd
+        ls -l "$dirname"
 
     - name: Release
       uses: softprops/action-gh-release@v1
