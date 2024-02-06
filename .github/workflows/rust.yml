@@ -46,12 +46,8 @@ jobs:
         dirname="hello-${GITHUB_REF#refs/tags/}-${{ matrix.target }}"
         mkdir "$dirname"
         mv "target/${{ matrix.target }}/release/hello" "$dirname"
-        tar -czf "$dirname.tar.gz" "$dirname"
+        tar -czf "../$dirname.tar.gz" "$dirname"
         echo "ASSET=$dirname.tar.gz" >> $GITHUB_ENV
-        pwd
-        ls -l "$dirname"
-        ls -l
-        echo ${GITHUB_WORKSPACE}
 
     - name: Release
       uses: softprops/action-gh-release@v1
