@@ -12,7 +12,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  job-matrix:
+  build:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
@@ -20,10 +21,6 @@ jobs:
             target: x86_64-unknown-linux-musl
           - os: ubuntu-latest
             target: armv7-unknown-linux-musleabihf
-
-  build:
-
-    runs-on: ${{ matrix.os }}
 
     steps:
     - name: Checkout
