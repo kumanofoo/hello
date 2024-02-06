@@ -14,6 +14,9 @@ env:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: rust_code
     strategy:
       matrix:
         include:
