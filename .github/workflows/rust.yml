@@ -35,7 +35,7 @@ jobs:
     - name: Extract crate information
       shell: bash
       run: |
-        echo "PACKAGE_NAME=$(sed -n 's/^name = "\(.*\)/\1/p' Cargo.toml | head -n1)" >> $GITHUB_ENV
+        echo "PACKAGE_NAME=$(sed -n 's/^name = "\(.*\)"/\1/p' Cargo.toml | head -n1)" >> $GITHUB_ENV
     - name: Install Rust toolchai
       run: |
         rustup target add ${{ matrix.target }}
