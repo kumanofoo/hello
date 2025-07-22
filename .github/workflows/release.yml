@@ -54,9 +54,9 @@ jobs:
           done
           mkdir dist
           tar -czf "dist/$dirname.tar.gz" "$dirname"
-          #echo "ASSET=$dirname.tar.gz" >> $GITHUB_ENV
+          echo "ASSET=$dirname.tar.gz" >> $GITHUB_ENV
       - name: Release
         uses: actions/upload-artifact@v4
         with:
           path: dist
-          # files: ${{ env.ASSET }}
+          name: ${{ env.ASSET }}
