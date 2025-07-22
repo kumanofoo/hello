@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       # glibc version to 2.31
-      image: ubuntu:20.04
+      # image: ubuntu:20.04
+      image: quay.io/pypa/manylinux_2_28_x86_64
     timeout-minutes: 30
     defaults:
       run:
@@ -41,4 +42,4 @@ jobs:
         run: cargo --version
       - name: Build package
         run: |
-          cargo build --bin hello world
+          cargo build --bins
