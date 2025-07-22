@@ -18,12 +18,7 @@ jobs:
       # glibc version to 2.31
       image: ubuntu:20.04
     timeout-minutes: 30
-    defaults:
-      run:
-        working-directory: rust_code
     steps:
-      - name: checkout
-        uses: actions/checkout@v4
       - name: Update and install packages
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -39,29 +34,37 @@ jobs:
       - name: install rust toolchain
         run: |
           rustup update --no-self-update stable
-          #rustup target add ${{ matrix.target }}
-      - name: check rust version
-        run: rustc --version
-      - name: check cargo version
-        run: cargo --version
-      - name: Build package
+      - name: check version
         run: |
+          rustc --version
+          cargo --version
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: extract crate information
+        shell: bash
+        run: |
+          echo "RUST_DIR=./rust_code" >> $GITHUB_ENV
+          cd ${{ env.RUST_DIR }}
+          echo "PACKAGE_NAME=$(cargo read-manifest | jq '.name')" >> $GITHUB_ENV
+          echo "BINS=$(cargo read-manifest | jq -r '.targets[] | select(.kind[] | contains("bin")) | .name')" >> $GITHUB_ENV
+      - name: build package
+        shell: bash
+        run: |
+          cd ${{ env.RUST_DIR }}
           cargo build --release --bins
       - name: build archive
         shell: bash
         run: |
-          dirname="hello-world-${GITHUB_REF#refs/tags/}-x86_64-unknown-linux-gnu"
-          mkdir "$dirname"
-          bins=$(cargo read-manifest --manifest-path Cargo.toml | jq -r '.targets[] | select(.kind[] | contains("bin")) | .name')
-          for bin_name in $bins; do
+          dirname="${{ env.PACKAGE_NAME }}-${GITHUB_REF#refs/tags/}-x86_64-unknown-linux-gnu"
+          mkdir "./$dirname"
+          for bin_name in ${{ env.BINS }}; do
             echo "Packaging $bin_name ..."
-            cp "./target/release/$bin_name" "$dirname"
+            cp "./${{ env.RUST_DIR }}/target/release/$bin_name" "$dirname"
           done
-          mkdir ../dist
-          tar -czf "../dist/$dirname.tar.gz" "$dirname"
+          tar -czf "./$dirname.tar.gz" "./$dirname"
           echo "ASSET=$dirname.tar.gz" >> $GITHUB_ENV
       - name: Release
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         with:
-          files: ./dist/${{ env.ASSET }}
+          files: ${{ env.ASSET }}
