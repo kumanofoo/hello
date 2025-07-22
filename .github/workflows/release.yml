@@ -17,6 +17,9 @@ jobs:
     container:
       # glibc version to 2.31
       image: ubuntu:20.04
+    strategy:
+      matrix:
+        target: [x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu]
     timeout-minutes: 30
     steps:
       - name: Update and install packages
@@ -34,6 +37,8 @@ jobs:
       - name: install rust toolchain
         run: |
           rustup update --no-self-update stable
+          rustup target add ${{ matrix.target }}
+          cargo install cross
       - name: check version
         run: |
           rustc --version
@@ -51,11 +56,11 @@ jobs:
         shell: bash
         run: |
           cd ${{ env.RUST_DIR }}
-          cargo build --release --bins
+          cross build --release --bins --target ${{ matrix.target }}
       - name: build archive
         shell: bash
         run: |
-          dirname="${{ env.PACKAGE_NAME }}-${GITHUB_REF#refs/tags/}-x86_64-unknown-linux-gnu"
+          dirname="${{ env.PACKAGE_NAME }}-${GITHUB_REF#refs/tags/}-${{ matrix.target }}"
           mkdir "$dirname"
           bins=$(cargo read-manifest --manifest-path ${{ env.RUST_DIR }}/Cargo.toml | jq -r '.targets[] | select(.kind[] | contains("bin")) | .name')
           for bin_name in $bins; do
