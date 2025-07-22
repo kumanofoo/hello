@@ -43,8 +43,9 @@ jobs:
       - name: extract crate information
         shell: bash
         run: |
-          echo "RUST_DIR=./rust_code" >> $GITHUB_ENV
-          cd ${{ env.RUST_DIR }}
+          rust_dir="rust_code"
+          echo "RUST_DIR=$rust_dir" >> $GITHUB_ENV
+          cd "$rust_dir"
           echo "PACKAGE_NAME=$(cargo read-manifest | jq '.name')" >> $GITHUB_ENV
           echo "BINS=$(cargo read-manifest | jq -r '.targets[] | select(.kind[] | contains("bin")) | .name')" >> $GITHUB_ENV
       - name: build package
@@ -56,12 +57,12 @@ jobs:
         shell: bash
         run: |
           dirname="${{ env.PACKAGE_NAME }}-${GITHUB_REF#refs/tags/}-x86_64-unknown-linux-gnu"
-          mkdir "./$dirname"
+          mkdir "$dirname"
           for bin_name in ${{ env.BINS }}; do
             echo "Packaging $bin_name ..."
-            cp "./${{ env.RUST_DIR }}/target/release/$bin_name" "$dirname"
+            cp "${{ env.RUST_DIR }}/target/release/$bin_name" "$dirname"
           done
-          tar -czf "./$dirname.tar.gz" "./$dirname"
+          tar -czf "$dirname.tar.gz" "$dirname"
           echo "ASSET=$dirname.tar.gz" >> $GITHUB_ENV
       - name: Release
         uses: softprops/action-gh-release@v2
