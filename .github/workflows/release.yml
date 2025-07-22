@@ -2,6 +2,8 @@ name: Release Test
 
 on:
   push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
     branches:
       - develop
   workflow_dispatch:
@@ -45,7 +47,7 @@ jobs:
       - name: build archive
         shell: bash
         run: |
-          dirname="hello-world-x86_64-unknown-linux-gnu"
+          dirname="hello-world-${GITHUB_REF#refs/tags/}-x86_64-unknown-linux-gnu"
           mkdir "$dirname"
           bins=$(cargo read-manifest --manifest-path Cargo.toml | jq -r '.targets[] | select(.kind[] | contains("bin")) | .name')
           for bin_name in $bins; do
@@ -55,11 +57,8 @@ jobs:
           mkdir ../dist
           tar -czf "../dist/$dirname.tar.gz" "$dirname"
           echo "ASSET=$dirname.tar.gz" >> $GITHUB_ENV
-          pwd
-          ls -lR
-          echo $GITHUB_WORKSPACE
       - name: Release
-        uses: actions/upload-artifact@v4
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
         with:
-          path: ./dist/${{ env.ASSET }}
-
+          files: ./dist/${{ env.ASSET }}
