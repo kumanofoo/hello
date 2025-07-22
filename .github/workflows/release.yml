@@ -52,10 +52,12 @@ jobs:
             echo "Packaging $bin_name ..."
             cp "./target/release/$bin_name" "$dirname"
           done
-          mkdir dist
-          tar -czf "dist/$dirname.tar.gz" "$dirname"
+          mkdir ./dist
+          tar -czf "./dist/$dirname.tar.gz" "$dirname"
           echo "ASSET=$dirname.tar.gz" >> $GITHUB_ENV
+          pwd
           ls -lR
+          echo $GITHUB_WORKSPACE
       - name: Release
         uses: actions/upload-artifact@v4
         with:
