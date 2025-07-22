@@ -24,7 +24,7 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: |
           apt-get update
-          apt-get install -y unzip curl git autoconf build-essential ca-certificates tzdata
+          apt-get install -y unzip curl git autoconf build-essential ca-certificates tzdata jq
       - name: check glibc version
         run: ldd --version
       - name: Install rustup
