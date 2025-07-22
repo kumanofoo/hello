@@ -2,6 +2,8 @@ name: Release Test
 
 on:
   push:
+    branches:
+      - develop
   workflow_dispatch:
 
 jobs:
@@ -11,7 +13,12 @@ jobs:
       # glibc version to 2.31
       image: ubuntu:20.04
     timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: rust_code
     steps:
+      - name: Checkupt
+        users: actions/checkout@v4
       - name: Update and install packages
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -32,3 +39,6 @@ jobs:
         run: rustc --version
       - name: check cargo version
         run: cargo --version
+      - name: Build package
+        run: |
+          cargo build --bin hello world
