@@ -18,7 +18,7 @@ jobs:
         working-directory: rust_code
     steps:
       - name: Checkupt
-        users: actions/checkout@v4
+        uses: actions/checkout@v4
       - name: Update and install packages
         env:
           DEBIAN_FRONTEND: noninteractive
