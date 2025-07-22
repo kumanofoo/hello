@@ -17,7 +17,7 @@ jobs:
       run:
         working-directory: rust_code
     steps:
-      - name: Checkupt
+      - name: checkout
         uses: actions/checkout@v4
       - name: Update and install packages
         env:
@@ -31,7 +31,7 @@ jobs:
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-      - name: Install Rust toolchain
+      - name: install rust toolchain
         run: |
           rustup update --no-self-update stable
           #rustup target add ${{ matrix.target }}
@@ -41,6 +41,18 @@ jobs:
         run: cargo --version
       - name: Build package
         run: |
-          cargo build --bins
-      - name: Files
-        run: ls -lR
+          cargo build --release --bins
+      - name: build archive
+        shell: bash
+        run: |
+          dirname="hello-world-x86_64-unknown-linux-gnu"
+          mkdir "$dirname"
+          bins=$(cargo read-manifest --manifest-path Cargo.toml | jq -r '.targets[] | select(.kind[] | containes("bin")) | .name')
+          for bin_name in $bins; do
+            echo "Packaging $bin_name ..."
+            cp "./target/release/$bin_name" "$dirname"
+          done
+          tar -czf "../$dirname.tar.gz" "$dirname"
+          echo "ASSET=$dirname.tar.gz" >> $GITHUB_ENV
+      - name: Release
+        run: ls -l ..
