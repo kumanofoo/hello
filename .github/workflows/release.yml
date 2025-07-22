@@ -47,7 +47,7 @@ jobs:
         run: |
           dirname="hello-world-x86_64-unknown-linux-gnu"
           mkdir "$dirname"
-          bins=$(cargo read-manifest --manifest-path Cargo.toml | jq -r '.targets[] | select(.kind[] | containes("bin")) | .name')
+          bins=$(cargo read-manifest --manifest-path Cargo.toml | jq -r '.targets[] | select(.kind[] | contains("bin")) | .name')
           for bin_name in $bins; do
             echo "Packaging $bin_name ..."
             cp "./target/release/$bin_name" "$dirname"
