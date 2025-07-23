@@ -88,5 +88,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         with:
-          #files: ${{ needs.build-x86_64.outputs.asset }}
           files: *.tar.gz
+          #files: ${{ needs.build-x86_64.outputs.asset }}
