@@ -156,5 +156,5 @@ jobs:
         if: github.ref_type == 'tag'
         with:
           files: |
-            "${{ needs.build-x86_64.outputs.asset }}"
-            "${{ needs.build-aarch64.outputs.asset }}"
+            ${{ needs.build-x86_64.outputs.asset }}
+            ${{ needs.build-aarch64.outputs.asset }}
