@@ -12,14 +12,11 @@ permissions:
   contents: write
     
 jobs:
-  build:
+  build-x86_64:
     runs-on: ubuntu-latest
     container:
       # glibc version to 2.31
       image: ubuntu:20.04
-    strategy:
-      matrix:
-        target: [x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu]
     timeout-minutes: 30
     steps:
       - name: Update and install packages
@@ -37,8 +34,6 @@ jobs:
       - name: install rust toolchain
         run: |
           rustup update --no-self-update stable
-          rustup target add ${{ matrix.target }}
-          cargo install cross
       - name: check version
         run: |
           rustc --version
@@ -56,11 +51,11 @@ jobs:
         shell: bash
         run: |
           cd ${{ env.RUST_DIR }}
-          cross build --release --bins --target ${{ matrix.target }}
+          cargo build --release --bins
       - name: build archive
         shell: bash
         run: |
-          dirname="${{ env.PACKAGE_NAME }}-${GITHUB_REF#refs/tags/}-${{ matrix.target }}"
+          dirname="${{ env.PACKAGE_NAME }}-${GITHUB_REF#refs/tags/}-x86_64-unknown-linux-gnu"
           mkdir "$dirname"
           bins=$(cargo read-manifest --manifest-path ${{ env.RUST_DIR }}/Cargo.toml | jq -r '.targets[] | select(.kind[] | contains("bin")) | .name')
           for bin_name in $bins; do
@@ -68,9 +63,23 @@ jobs:
             cp "${{ env.RUST_DIR }}/target/release/$bin_name" "$dirname"
           done
           tar -czf "$dirname.tar.gz" "$dirname"
-          echo "ASSET=$dirname.tar.gz" >> $GITHUB_ENV
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        if: github.ref_type == 'tag'
+          echo "ASSET_X86_64=$dirname.tar.gz" >> $GITHUB_ENV
+      - name: upload
+        uses: actions/upload-artifact@v4
         with:
-          files: ${{ env.ASSET }}
+          name: ${{ env.ASSET_X86_64 }}
+          path: ${{ env.ASSET_X86_64 }}
+
+ create-release:
+   needs: [build-x86_64]
+   runs-on: ubuntu-latest
+   steps:
+     - name: download x86_64 artifact
+       uses: actions/download-artifact@v4
+       with:
+         name: ${{ env.ASSET_X86_64 }}
+     - name: Release
+       uses: softprops/action-gh-release@v2
+       if: github.ref_type == 'tag'
+       with:
+         files: ${{ env.ASSET_X86_64 }}
