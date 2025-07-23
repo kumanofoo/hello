@@ -18,6 +18,8 @@ jobs:
       # glibc version to 2.31
       image: ubuntu:20.04
     timeout-minutes: 30
+    outputs:
+      asset: ${{ steps.archive.outputs.asset }}
     steps:
       - name: Update and install packages
         env:
@@ -53,6 +55,7 @@ jobs:
           cd ${{ env.RUST_DIR }}
           cargo build --release --bins
       - name: build archive
+        id: archive
         shell: bash
         run: |
           dirname="${{ env.PACKAGE_NAME }}-${GITHUB_REF#refs/tags/}-x86_64-unknown-linux-gnu"
@@ -63,12 +66,12 @@ jobs:
             cp "${{ env.RUST_DIR }}/target/release/$bin_name" "$dirname"
           done
           tar -czf "$dirname.tar.gz" "$dirname"
-          echo "ASSET_X86_64=$dirname.tar.gz" >> $GITHUB_ENV
+          echo "asset=$dirname.tar.gz" >> $GITHUB_OUTPUT
       - name: upload
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ASSET_X86_64 }}
-          path: ${{ env.ASSET_X86_64 }}
+          name: ${{ steps.archive.outputs.asset }}
+          path: ${{ steps.archive.outputs.asset }}
   
   create-release:
     needs: [build-x86_64]
@@ -79,3 +82,5 @@ jobs:
       - name: release
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
+        with:
+          files: ${{ needs.build-x86_64.outputs.asset }}
