@@ -76,16 +76,6 @@ jobs:
     steps:
       - name: download x86_64 artifact
         uses: actions/download-artifact@v4
-        with:
-          name: ${{ env.ASSET_X86_64 }}
-      - name: check working directory
-        run: |
-          pwd
-          echo GITHUB_WORKSPACE: $GITHUB_WORKSPACE
-          echo "ASSET_X86_64: ${{ env.ASSET_X86_64 }}"
-          ls -l ${{ env.ASSET_X86_64 }}
       - name: release
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
-        with:
-          files: "${{ env.ASSET_X86_64 }}"
