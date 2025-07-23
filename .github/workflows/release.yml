@@ -78,11 +78,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ env.ASSET_X86_64 }}
-      - name: check donloaded artifact
-        run: |
-          pwd
-          ls -lR
-      - name: Release
+      - name: release
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         with:
