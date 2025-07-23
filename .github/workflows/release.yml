@@ -79,8 +79,14 @@ jobs:
     steps:
       - name: download x86_64 artifact
         uses: actions/download-artifact@v4
+      - name: check asset
+        run: |
+          pwd
+          ls -l
+          echo GITHUB_WORKSPACE: $GITHUB_WORKSPACE
       - name: release
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         with:
-          files: ${{ needs.build-x86_64.outputs.asset }}
+          #files: ${{ needs.build-x86_64.outputs.asset }}
+          files: *.tar.gz
