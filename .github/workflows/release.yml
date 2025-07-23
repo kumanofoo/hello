@@ -13,6 +13,7 @@ permissions:
     
 jobs:
   build-x86_64:
+    if: github.ref_type == 'branch'
     runs-on: ubuntu-latest
     container:
       # glibc version to 2.31
@@ -74,6 +75,7 @@ jobs:
           path: ${{ steps.archive.outputs.asset }}
   
   build-aarch64:
+    if: github.ref_type == 'branch'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     outputs:
@@ -134,6 +136,69 @@ jobs:
           name: aarch64
           path: ${{ steps.archive.outputs.asset }}
   
+  build:
+    if: github.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        target: [ x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu ]
+    outputs:
+      asset: ${{ steps.archive.outputs.asset }}
+    steps:
+      - name: Update and install packages
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip curl git autoconf build-essential ca-certificates tzdata jq
+      - name: Install rustup
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      - name: install rust toolchain
+        run: |
+          rustup update --no-self-update stable
+          rustup target add ${{ matrix.target }}
+          cargo install cross
+      - name: check version
+        run: |
+          rustc --version
+          cargo --version
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: extract crate information
+        shell: bash
+        run: |
+          rust_dir="rust_code"
+          echo "RUST_DIR=$rust_dir" >> $GITHUB_ENV
+          cd "$rust_dir"
+          echo "PACKAGE_NAME=$(cargo read-manifest | jq '.name')" >> $GITHUB_ENV
+      - name: build package
+        shell: bash
+        run: |
+          cd ${{ env.RUST_DIR }}
+          cross build --release --bins --target ${{ matrix.target }}
+      - name: build archive
+        id: archive
+        shell: bash
+        run: |
+          ls -lR
+          dirname="${{ env.PACKAGE_NAME }}-${GITHUB_REF#refs/tags/}-${{ matrix.target }}"
+          mkdir "$dirname"
+          bins=$(cargo read-manifest --manifest-path ${{ env.RUST_DIR }}/Cargo.toml | jq -r '.targets[] | select(.kind[] | contains("bin")) | .name')
+          for bin_name in $bins; do
+            echo "Packaging $bin_name ..."
+            cp "${{ env.RUST_DIR }}/target/${{ matrix.target }}/release/$bin_name" "$dirname"
+          done
+          tar -czf "$dirname.tar.gz" "$dirname"
+          echo "asset=$dirname.tar.gz" >> $GITHUB_OUTPUT
+      - name: release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == "tag"
+        with:
+          files: ${{ steps.archive.outputs.asset }}
+
   create-release:
     needs: [build-x86_64, build-aarch64]
     runs-on: ubuntu-latest
