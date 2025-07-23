@@ -137,7 +137,6 @@ jobs:
           path: ${{ steps.archive.outputs.asset }}
   
   build:
-    if: github.ref_type == 'branch'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
