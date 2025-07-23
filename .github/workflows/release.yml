@@ -195,7 +195,7 @@ jobs:
           echo "asset=$dirname.tar.gz" >> $GITHUB_OUTPUT
       - name: release
         uses: softprops/action-gh-release@v2
-        if: github.ref_type == "tag"
+        if: github.ref_type == 'tag'
         with:
           files: ${{ steps.archive.outputs.asset }}
 
