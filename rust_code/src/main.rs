@@ -1,6 +1,6 @@
 fn main() {
     println!("Hello, world!!!!!!!!");
-    println!("ok!!");
+    println!("ok!!!");
 }
 
 #[test]
